@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:dart_mcp/server.dart';
 import 'package:dart_mcp/stdio.dart';
 import 'package:file_mcp/file_finder.dart';
-import 'package:stream_channel/stream_channel.dart';
 
 Future<void> main() async {
   final channel = stdioChannel(input: stdin, output: stdout);
@@ -13,16 +12,14 @@ Future<void> main() async {
 }
 
 final class FileMcpServer extends MCPServer with ToolsSupport {
-  FileMcpServer(StreamChannel<String> channel)
+  FileMcpServer(super.channel)
       : _fileFinder = FileFinder(),
         super.fromStreamChannel(
-          channel,
           implementation: Implementation(
             name: 'file_mcp',
             version: '1.0.0',
           ),
-          instructions:
-              'Locate files on the local filesystem. '
+          instructions: 'Locate files on the local filesystem. '
               'Use find_file to search by name under a directory tree, '
               'or resolve_path to resolve and verify a single path.',
         );
@@ -34,8 +31,7 @@ final class FileMcpServer extends MCPServer with ToolsSupport {
     registerTool(
       Tool(
         name: 'find_file',
-        description:
-            'Search for files by name within a directory tree. '
+        description: 'Search for files by name within a directory tree. '
             'Defaults to searching from the user home directory.',
         inputSchema: ObjectSchema(
           properties: {
@@ -156,8 +152,7 @@ final class FileMcpServer extends MCPServer with ToolsSupport {
       final lines = [
         'absolute_path: ${resolution.absolutePath}',
         'type: $kindLabel',
-        if (resolution.parentPath != null)
-          'parent: ${resolution.parentPath}',
+        if (resolution.parentPath != null) 'parent: ${resolution.parentPath}',
       ];
 
       return CallToolResult(content: [TextContent(text: lines.join('\n'))]);
