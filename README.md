@@ -16,6 +16,12 @@ Search for files by name under a directory tree.
 | `exact_match` | bool   | no       | `false`        |
 | `max_depth`   | int    | no       | unlimited      |
 
+`filename` is matched against the basename only (case-insensitive):
+
+- Globs: `*.dart`, `*mcp*`, `file_*.dart` (`*` any run of characters, `?` one character)
+- No wildcards: substring, so `readme` finds `readme.md`
+- `exact_match: true`: full basename equality; `*` and `?` are literal
+
 Search uses async breadth-first traversal with parallel directory scans and skips common cache/build directories (`node_modules`, `.git`, `build`, etc.).
 
 ### `resolve_path`

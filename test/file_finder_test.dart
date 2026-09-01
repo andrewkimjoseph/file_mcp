@@ -15,6 +15,7 @@ void main() {
       'shallow.txt': 'a',
       'docs/readme.md': 'b',
       'docs/notes.txt': 'c',
+      'docs/notes.txt.bak': 'h',
       'deep/nested/target.txt': 'd',
       'deep/nested/buried/hidden.txt': 'e',
       'node_modules/pkg/secret.txt': 'f',
@@ -80,6 +81,58 @@ void main() {
 
     expect(matches, hasLength(1));
     expect(matches.single, contains('deep/nested/buried/hidden.txt'));
+  });
+
+  test('finds files with glob extension', () async {
+    final matches = await finder.findFiles(
+      filename: '*.txt',
+      searchRoot: tempRoot.path,
+    );
+
+    expect(
+      matches.map((path) => path.split(Platform.pathSeparator).last).toSet(),
+      {'shallow.txt', 'notes.txt', 'target.txt', 'hidden.txt'},
+    );
+  });
+
+  test('finds files with prefix glob', () async {
+    final matches = await finder.findFiles(
+      filename: 'readme*',
+      searchRoot: tempRoot.path,
+    );
+
+    expect(matches, hasLength(1));
+    expect(matches.single, endsWith('docs/readme.md'));
+  });
+
+  test('finds files with suffix glob', () async {
+    final matches = await finder.findFiles(
+      filename: 'target.*',
+      searchRoot: tempRoot.path,
+    );
+
+    expect(matches, hasLength(1));
+    expect(matches.single, endsWith('deep/nested/target.txt'));
+  });
+
+  test('finds files with single-character glob', () async {
+    final matches = await finder.findFiles(
+      filename: '?otes.txt',
+      searchRoot: tempRoot.path,
+    );
+
+    expect(matches, hasLength(1));
+    expect(matches.single, endsWith('docs/notes.txt'));
+  });
+
+  test('does not treat wildcards as globs when exact_match is true', () async {
+    final matches = await finder.findFiles(
+      filename: '*.txt',
+      searchRoot: tempRoot.path,
+      exactMatch: true,
+    );
+
+    expect(matches, isEmpty);
   });
 
   test('skips node_modules and dot directories', () async {

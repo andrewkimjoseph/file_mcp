@@ -20,8 +20,9 @@ final class FileMcpServer extends MCPServer with ToolsSupport {
             version: '1.0.0',
           ),
           instructions: 'Locate files on the local filesystem. '
-              'Use find_file to search by name under a directory tree, '
-              'or resolve_path to resolve and verify a single path.',
+              'Use find_file to search by basename, glob, or substring '
+              'under a directory tree, or resolve_path to resolve and '
+              'verify a single path.',
         );
 
   final FileFinder _fileFinder;
@@ -31,13 +32,17 @@ final class FileMcpServer extends MCPServer with ToolsSupport {
     registerTool(
       Tool(
         name: 'find_file',
-        description: 'Search for files by name within a directory tree. '
+        description: 'Search for files by basename within a directory tree. '
+            'Supports globs such as *.dart, *mcp*, and file_*.dart. '
             'Defaults to searching from the user home directory.',
         inputSchema: ObjectSchema(
           properties: {
             'filename': StringSchema(
               description:
-                  'File name or substring to match (case-insensitive).',
+                  'Basename to match (case-insensitive). '
+                  'Use * and ? as globs (e.g. *.dart, *mcp*, file_*.dart). '
+                  'Without wildcards, matches as a substring. '
+                  'When exact_match is true, wildcards are literal.',
             ),
             'search_root': StringSchema(
               description:
@@ -48,7 +53,8 @@ final class FileMcpServer extends MCPServer with ToolsSupport {
             ),
             'exact_match': BooleanSchema(
               description:
-                  'When true, match the full basename exactly. Defaults to false.',
+                  'When true, match the full basename exactly and treat '
+                  '* and ? as literal characters. Defaults to false.',
             ),
             'max_depth': IntegerSchema(
               description:

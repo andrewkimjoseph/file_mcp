@@ -52,6 +52,10 @@ class FileFinder {
 
   /// Search for files matching [filename] under [searchRoot].
   ///
+  /// [filename] is matched against the basename only. With [exactMatch], the
+  /// names must be equal (wildcards are literal). Otherwise `*` and `?` are
+  /// treated as globs; queries without wildcards still match as a substring.
+  ///
   /// Returns absolute paths, stopping after [maxResults] matches.
   /// Uses async breadth-first traversal with bounded concurrency.
   Future<List<String>> findFiles({
@@ -76,6 +80,9 @@ class FileFinder {
     }
 
     final needle = filename.toLowerCase();
+    final glob = !exactMatch && _hasGlobWildcards(needle)
+        ? _globToRegExp(needle)
+        : null;
     final results = <String>[];
     final queue = Queue<_DirWorkItem>()..add(_DirWorkItem(root, 0));
     final inFlight = <Future<void>>{};
@@ -105,9 +112,7 @@ class FileFinder {
           if (entry is! File) continue;
 
           final basename = name.toLowerCase();
-          final matches =
-              exactMatch ? basename == needle : basename.contains(needle);
-          if (matches) {
+          if (_matchesBasename(basename, needle, exactMatch, glob)) {
             results.add(entry.absolute.path);
             if (results.length >= maxResults) {
               stopped = true;
@@ -177,6 +182,21 @@ class FileFinder {
     );
   }
 
+  bool _matchesBasename(
+    String basename,
+    String needle,
+    bool exactMatch,
+    RegExp? glob,
+  ) {
+    if (exactMatch) {
+      return basename == needle;
+    }
+    if (glob != null) {
+      return glob.hasMatch(basename);
+    }
+    return basename.contains(needle);
+  }
+
   bool _shouldSkipDirectory(String name) {
     if (name.isEmpty) return false;
     if (name.startsWith('.')) return true;
@@ -189,4 +209,25 @@ class FileFinder {
         .where((part) => part.isNotEmpty)
         .last;
   }
+}
+
+bool _hasGlobWildcards(String pattern) {
+  return pattern.contains('*') || pattern.contains('?');
+}
+
+RegExp _globToRegExp(String pattern) {
+  final buffer = StringBuffer('^');
+  for (var i = 0; i < pattern.length; i++) {
+    final char = pattern[i];
+    switch (char) {
+      case '*':
+        buffer.write('.*');
+      case '?':
+        buffer.write('.');
+      default:
+        buffer.write(RegExp.escape(char));
+    }
+  }
+  buffer.write(r'$');
+  return RegExp(buffer.toString());
 }
