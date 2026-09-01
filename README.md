@@ -26,6 +26,47 @@ Resolve a single path and report whether it exists as a file or directory.
 |-----------|--------|----------|
 | `path`    | string | yes      |
 
+## Install Dart
+
+This server requires the [Dart SDK](https://dart.dev/get-dart). If you already have [Flutter](https://docs.flutter.dev/get-started/install), Dart is included and you can skip this step.
+
+Install from the **stable** channel using a package manager:
+
+**macOS** ([Homebrew](https://brew.sh/)):
+
+```bash
+brew tap dart-lang/dart
+brew trust dart-lang/dart
+brew install dart
+```
+
+**Linux** (Debian/Ubuntu):
+
+```bash
+sudo apt-get update && sudo apt-get install apt-transport-https
+wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub \
+  | sudo gpg --dearmor -o /usr/share/keyrings/dart.gpg
+echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' \
+  | sudo tee /etc/apt/sources.list.d/dart_stable.list
+sudo apt-get update && sudo apt-get install dart
+```
+
+On ARM or RISC-V, replace `arch=amd64` with `armhf`, `arm64`, or `riscv64`.
+
+**Windows** ([Chocolatey](https://chocolatey.org/), elevated PowerShell):
+
+```powershell
+choco install dart-sdk
+```
+
+Then confirm the SDK is on your `PATH`:
+
+```bash
+dart --version
+```
+
+Other options (Docker, ZIP archive, building from source) are on [Get the Dart SDK](https://dart.dev/get-dart).
+
 ## Run locally
 
 ```bash
